@@ -30,8 +30,6 @@ spec:
             - name: MYSQL_ALLOW_EMPTY_PASSWORD
               value: "yes"
             - name: MYSQL_ROOT_PASSWORD
-            - name: SQL_PROVISION
-              value: "CREATE DATABASE IF NOT EXISTS credentials;GRANT ALL ON credentials.* TO 'credentials001'@'%' IDENTIFIED BY 'password';CREATE DATABASE IF NOT EXISTS discovery;"
           image: mysql:5.6
           name: edx-devstack-mysql
           command: ["mysql"]
