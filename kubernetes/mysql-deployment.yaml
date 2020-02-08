@@ -35,7 +35,7 @@ spec:
           image: mysql:5.6
           name: edx-devstack-mysql
           command: ["mysql"]
-          args: ["-uroot mysql", "$(SQL_PROVISION)"]
+          args: ["-uroot mysql"]
           resources: {}
           volumeMounts:
             - mountPath: /var/lib/mysql
