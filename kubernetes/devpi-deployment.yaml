@@ -30,7 +30,7 @@ spec:
           volumeMounts:
             - mountPath: /data
               name: devpi-data
-      hostname: devpi.devstack.edx
+      hostname: devpi-devstack-edx
       restartPolicy: Always
       volumes:
         - name: devpi-data

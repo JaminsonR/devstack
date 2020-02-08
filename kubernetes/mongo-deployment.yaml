@@ -34,7 +34,7 @@ spec:
           volumeMounts:
             - mountPath: /data/db
               name: mongo-data
-      hostname: mongo.devstack.edx
+      hostname: mongo-devstack-edx
       restartPolicy: Always
       volumes:
         - name: mongo-data

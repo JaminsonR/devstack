@@ -36,7 +36,7 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: mysql-data
-      hostname: mysql.devstack.edx
+      hostname: mysq-devstack-edx
       restartPolicy: Always
       volumes:
         - name: mysql-data
