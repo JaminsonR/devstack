@@ -22,24 +22,24 @@ spec:
         io.kompose.service: mysql
     spec:
       containers:
-      - args:
-        - mysqld
-        - --character-set-server=utf8
-        - --collation-server=utf8_general_ci
-        env:
-        - name: MYSQL_ALLOW_EMPTY_PASSWORD
-          value: "yes"
-        - name: MYSQL_ROOT_PASSWORD
-        image: mysql:5.6
-        name: edx.devstack.mysql
-        resources: {}
-        volumeMounts:
-        - mountPath: /var/lib/mysql
-          name: mysql-data
+        - args:
+            - mysqld
+            - --character-set-server=utf8
+            - --collation-server=utf8_general_ci
+          env:
+            - name: MYSQL_ALLOW_EMPTY_PASSWORD
+              value: "yes"
+            - name: MYSQL_ROOT_PASSWORD
+          image: mysql:5.6
+          name: edx-devstack-mysql
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysql-data
       hostname: mysql.devstack.edx
       restartPolicy: Always
       volumes:
-      - name: mysql-data
-        persistentVolumeClaim:
-          claimName: mysql-data
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-data
 status: {}

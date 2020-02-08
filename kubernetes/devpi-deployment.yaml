@@ -22,18 +22,18 @@ spec:
         io.kompose.service: devpi
     spec:
       containers:
-      - image: edxops/devpi:latest
-        name: edx.devstack.devpi
-        ports:
-        - containerPort: 3141
-        resources: {}
-        volumeMounts:
-        - mountPath: /data
-          name: devpi-data
+        - image: edxops/devpi:latest
+          name: edx-devstack-devpi
+          ports:
+            - containerPort: 3141
+          resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: devpi-data
       hostname: devpi.devstack.edx
       restartPolicy: Always
       volumes:
-      - name: devpi-data
-        persistentVolumeClaim:
-          claimName: devpi-data
+        - name: devpi-data
+          persistentVolumeClaim:
+            claimName: devpi-data
 status: {}

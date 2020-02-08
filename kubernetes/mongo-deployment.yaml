@@ -22,22 +22,22 @@ spec:
         io.kompose.service: mongo
     spec:
       containers:
-      - args:
-        - mongod
-        - --smallfiles
-        - --nojournal
-        - --storageEngine
-        - wiredTiger
-        image: mongo:3.2.16
-        name: edx.devstack.mongo
-        resources: {}
-        volumeMounts:
-        - mountPath: /data/db
-          name: mongo-data
+        - args:
+            - mongod
+            - --smallfiles
+            - --nojournal
+            - --storageEngine
+            - wiredTiger
+          image: mongo:3.2.16
+          name: edx-devstack-mongo
+          resources: {}
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongo-data
       hostname: mongo.devstack.edx
       restartPolicy: Always
       volumes:
-      - name: mongo-data
-        persistentVolumeClaim:
-          claimName: mongo-data
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-data
 status: {}
