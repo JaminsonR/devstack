@@ -33,7 +33,6 @@ spec:
           image: mysql:5.6
           name: edx-devstack-mysql
           command: ["mysql"]
-          args: ["-uroot mysql"]
           resources: {}
           volumeMounts:
             - mountPath: /var/lib/mysql
@@ -45,4 +44,3 @@ spec:
           persistentVolumeClaim:
             claimName: mysql-data
 status: {}
-
