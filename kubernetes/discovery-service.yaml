@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.20.0 (f3d54d784)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: discovery
+  name: discovery
+spec:
+  ports:
+  - name: "18381"
+    port: 18381
+    targetPort: 18381
+  selector:
+    io.kompose.service: discovery
+status:
+  loadBalancer: {}

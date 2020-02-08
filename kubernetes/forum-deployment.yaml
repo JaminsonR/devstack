@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.20.0 (f3d54d784)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: forum
+  name: forum
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.20.0 (f3d54d784)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: forum
+    spec:
+      containers:
+      - args:
+        - bash
+        - -c
+        - source /edx/app/forum/ruby_env && source /edx/app/forum/devstack_forum_env
+          && cd /edx/app/forum/cs_comments_service && bundle install && while true;
+          do ruby app.rb -o 0.0.0.0 ; sleep 2; done
+        image: edxops/forum:latest
+        name: edx.devstack.forum
+        ports:
+        - containerPort: 4567
+        resources: {}
+      hostname: forum.devstack.edx
+      restartPolicy: Always
+status: {}
