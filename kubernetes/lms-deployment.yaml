@@ -25,7 +25,9 @@ spec:
         - args:
             - bash
             - -c
-            - source /edx/app/edxapp/edxapp_env && while true; do python /edx/app/edxapp/edx-platform/manage.py
+            - rm -r /edx/app/edxapp/edx-platform; cd /edx/app/edxapp; git clone --single-branch -b open-release/ironwood.master -c core.symlinks=true https://github.com/edx/edx-platform.git;
+              source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform && NO_PYTHON_UNINSTALL=1 paver install_prereqs;
+              source /edx/app/edxapp/edxapp_env && while true; do python /edx/app/edxapp/edx-platform/manage.py
               lms runserver 0.0.0.0:18000 --settings devstack_docker; sleep 2; done
           env:
             - name: BOK_CHOY_CMS_PORT
