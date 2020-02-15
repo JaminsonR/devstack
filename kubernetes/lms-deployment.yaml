@@ -38,7 +38,7 @@ spec:
               value: edx-devstack-mongo
             - name: NO_PYTHON_UNINSTALL
               value: "1"
-          image: edxops/edxapp:latest
+          image: jaminsonr/edxapp:latest
           name: edx-devstack-lms
           ports:
             - containerPort: 18000
