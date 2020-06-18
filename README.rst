@@ -3,22 +3,35 @@ Open edX Devstack |Build Status|
 
 Get up and running quickly with Open edX services.
 
-If you are seeking info on the Vagrant-based devstack, please see
-https://openedx.atlassian.net/wiki/spaces/OpenOPS/pages/60227787/Running+Vagrant-based+Devstack. This
-project is meant to replace the traditional Vagrant-based devstack with a
-multi-container approach driven by `Docker Compose`_. It is still in the
-beta testing phase.
+This project replaces the older Vagrant-based devstack with a
+multi-container approach driven by `Docker Compose`_.
 
-Updated Documentation
----------------------
+A Devstack installation includes the following Open edX components:
 
-These docs might be out of date. Please see the updated docs at https://edx.readthedocs.io/projects/edx-installing-configuring-and-running/en/latest/installation/index.html.
+* The Learning Management System (LMS)
+* Open edX Studio
+* Discussion Forums
+* Open Response Assessments (ORA)
+* E-Commerce
+* Credentials
+* Notes
+* Course Discovery
+* XQueue
+* Open edX Search
+* A demonstration Open edX course
 
-Support
--------
+Analytics Devstack also includes the following Open edX components:
 
-Tickets or issues should be filed in Jira under the platform project:
-https://openedx.atlassian.net/projects/PLAT/issues
+* Open edX Analytics Data API
+* Open edX Insights
+* The components needed to run the Open edX Analytics Pipeline. This is the
+  primary extract, transform, and load (ETL) tool that extracts and analyzes
+  data from the other Open edX services.
+
+Where to Find Help
+------------------
+
+There are a number of places to get help, including mailing lists and real-time chat. Please choose an appropriate venue for your question. This helps ensure that you get good prompt advice, and keeps discussion focused. For details of your options, see the `Community`_ pages.
 
 FYI
 ---
@@ -30,6 +43,12 @@ are for standing up a new docker based VM.
 Prerequisites
 -------------
 
+You will need to have the following installed:
+
+- make
+- python 3
+- docker
+
 This project requires **Docker 17.06+ CE**.  We recommend Docker Stable, but
 Docker Edge should work as well.
 
@@ -40,20 +59,20 @@ provision.
 For macOS users, please use `Docker for Mac`_. Previous Mac-based tools (e.g.
 boot2docker) are *not* supported.
 
+Since a Docker-based devstack runs many containers,
+you should configure Docker with a sufficient
+amount of resources. We find that `configuring Docker for Mac`_ with
+a minimum of 2 CPUs and 8GB of memory does work.
+
 `Docker for Windows`_ may work but has not been tested and is *not* supported.
 
-Linux users should *not* be using the ``overlay`` storage driver.  ``overlay2``
-is tested and supported, but requires kernel version 4.0+.  Check which storage
-driver your docker-daemon is configured to use:
+If you are using Linux, use the ``overlay2`` storage driver, kernel version
+4.0+ and *not* ``overlay``. To check which storage driver your
+``docker-daemon`` uses, run the following command.
 
 .. code:: sh
 
    docker info | grep -i 'storage driver'
-
-You will also need the following installed:
-
-- make
-- python pip (optional for MacOS)
 
 Using the Latest Images
 -----------------------
@@ -64,7 +83,7 @@ below, run the following sequence of commands if you want to use the most up-to-
 .. code:: sh
 
     make down
-    make pull
+    make dev.pull
     make dev.up
 
 This will stop any running devstack containers, pull the latest images, and then start all of the devstack containers.
@@ -74,16 +93,13 @@ Getting Started
 
 All of the services can be run by following the steps below. For analyticstack, follow `Getting Started on Analytics`_.
 
-**NOTE:** Since a Docker-based devstack runs many containers,
-you should configure Docker with a sufficient
-amount of resources. We find that `configuring Docker for Mac`_ with
-a minimum of 2 CPUs and 8GB of memory does work.
-
 1. Install the requirements inside of a `Python virtualenv`_.
 
    .. code:: sh
 
        make requirements
+
+   This will install docker-compose and other utilities into your virtualenv.
 
 2. The Docker Compose file mounts a host volume for each service's executing
    code. The host directory defaults to be a sibling of this directory. For
@@ -94,19 +110,25 @@ a minimum of 2 CPUs and 8GB of memory does work.
 
    .. code:: sh
 
-       make dev.clone
+       make dev.clone  # or, `make dev.clone.ssh` if you have SSH keys set up.
 
    You may customize where the local repositories are found by setting the
    DEVSTACK\_WORKSPACE environment variable.
 
-   Be sure to share the cloned directories in the Docker -> Preferences... ->
-   File Sharing box.
+   (macOS only) Share the cloned service directories in Docker, using
+   **Docker -> Preferences -> File Sharing** in the Docker menu.
 
 3. Pull any changes made to the various images on which the devstack depends.
 
    .. code:: sh
 
-       make pull
+       make dev.pull
+
+3. (Optional) You have an option to use nfs on MacOS which will improve the performance significantly, to set it up ONLY ON MAC, do
+    .. code:: sh
+
+        make dev.nfs.setup
+
 
 4. Run the provision command, if you haven't already, to configure the various
    services with superusers (for development without the auth service) and
@@ -131,6 +153,12 @@ a minimum of 2 CPUs and 8GB of memory does work.
 
        make dev.sync.provision
 
+    Provision using `nfs`_:
+
+   .. code:: sh
+
+       make dev.nfs.provision
+
    This is expected to take a while, produce a lot of output from a bunch of steps, and finally end with ``Provisioning complete!``
 
 5. Start the services. This command will mount the repositories under the
@@ -149,6 +177,12 @@ a minimum of 2 CPUs and 8GB of memory does work.
    .. code:: sh
 
        make dev.sync.up
+
+   Start using `nfs`_:
+
+   .. code:: sh
+
+       make dev.nfs.up
 
 
 After the services have started, if you need shell access to one of the
@@ -200,17 +234,26 @@ The provisioning script creates a Django superuser for every service.
 The LMS also includes demo accounts. The passwords for each of these accounts
 is ``edx``.
 
-+------------+------------------------+
-| Username   | Email                  |
-+============+========================+
-| audit      | audit@example.com      |
-+------------+------------------------+
-| honor      | honor@example.com      |
-+------------+------------------------+
-| staff      | staff@example.com      |
-+------------+------------------------+
-| verified   | verified@example.com   |
-+------------+------------------------+
+  .. list-table::
+   :widths: 20 60
+   :header-rows: 1
+
+   * - Account
+     - Description
+   * - ``staff@example.com``
+     - An LMS and Studio user with course creation and editing permissions.
+       This user is a course team member with the Admin role, which gives
+       rights to work with the demonstration course in Studio, the LMS, and
+       Insights.
+   * - ``verified@example.com``
+     - A student account that you can use to access the LMS for testing
+       verified certificates.
+   * - ``audit@example.com``
+     - A student account that you can use to access the LMS for testing course
+       auditing.
+   * - ``honor@example.com``
+     - A student account that you can use to access the LMS for testing honor
+       code certificates.
 
 Getting Started on Analytics
 ----------------------------
@@ -230,7 +273,7 @@ analyticstack ( e.g. lms, studio etc ) consider setting higher memory.
 
    .. code:: sh
 
-       make pull
+       make dev.pull
        make pull.analytics_pipeline
 
 3. Run the provision command to configure the analyticstack.
@@ -301,17 +344,17 @@ meant to be user-facing, the "homepage" may be the API root.
 +---------------------+-------------------------------------+
 | Service             | URL                                 |
 +=====================+=====================================+
+| LMS                 | http://localhost:18000/             |
++---------------------+-------------------------------------+
+| Studio/CMS          | http://localhost:18010/             |
++---------------------+-------------------------------------+
 | Credentials         | http://localhost:18150/api/v2/      |
 +---------------------+-------------------------------------+
 | Catalog/Discovery   | http://localhost:18381/api-docs/    |
 +---------------------+-------------------------------------+
 | E-Commerce/Otto     | http://localhost:18130/dashboard/   |
 +---------------------+-------------------------------------+
-| LMS                 | http://localhost:18000/             |
-+---------------------+-------------------------------------+
 | Notes/edx-notes-api | http://localhost:18120/api/v1/      |
-+---------------------+-------------------------------------+
-| Studio/CMS          | http://localhost:18010/             |
 +---------------------+-------------------------------------+
 | Registrar           | http://localhost:18734/api-docs/    |
 +---------------------+-------------------------------------+
@@ -322,13 +365,15 @@ Microfrontend URLs
 Each microfrontend is accessible at ``localhost`` on a specific port. The table below
 provides links to each microfrontend.
 
-+---------------------+-------------------------------------+
-| Service             | URL                                 |
-+=====================+=====================================+
-| Gradebook           | http://localhost:1994/              |
-+---------------------+-------------------------------------+
-| Program Manager     | http://localhost:1976/              |
-+---------------------+-------------------------------------+
++-------------------------+---------------------------------+
+| Service                 | URL                             |
++=========================+=================================+
+| Gradebook               | http://localhost:1994/          |
++-------------------------+---------------------------------+
+| Program Console         | http://localhost:1976/          |
++-------------------------+---------------------------------+
+| Publisher App Frontend  | http://localhost:18400/         |
++-------------------------+---------------------------------+
 
 Useful Commands
 ---------------
@@ -343,12 +388,28 @@ Credentials, etc:
 
     make dev.up.lms
 
+Similarly, ``make dev.pull`` can take a long time, as it pulls all services' images,
+whether or not you need them.
+To instead only pull images required by your service and its dependencies,
+run ``make dev.pull.<service>``.
+
+Finally, ``make dev.provision.services.<service1>+<service2>+...``
+can be used in place of ``make dev.provision`` in order to run an expedited version of
+provisioning for a specific set of services.
+For example, if you mess up just your
+Course Discovery and Registrar databases,
+running ``make dev.provision.services.discovery+registrar``
+will take much less time than the full provisioning process.
+However, note that some services' provisioning processes depend on other services
+already being correcty provisioned.
+So, when in doubt, it may still be best to run the full ``make dev.provision``.
+
 Sometimes you may need to restart a particular application server. To do so,
-simply use the ``docker-compose restart`` command:
+simply use the ``make dev.restart.%`` command:
 
 .. code:: sh
 
-    docker-compose restart <service>
+    make dev.restart.<service>
 
 In all the above commands, ``<service>`` should be replaced with one of the following:
 
@@ -360,7 +421,9 @@ In all the above commands, ``<service>`` should be replaced with one of the foll
 -  studio
 -  registrar
 -  gradebook
--  program-manager
+-  program-console
+-  frontend-app-learning
+-  frontend-app-publisher
 
 If you'd like to add some convenience make targets, you can add them to a ``local.mk`` file, ignored by git.
 
@@ -441,39 +504,43 @@ E-Commerce Service, you would modify ``ECOMMERCE_VERSION`` in
 How do I run the images for a named Open edX release?
 -----------------------------------------------------
 
-1. Set the ``OPENEDX_RELEASE`` environment variable to the appropriate image
+#. Set the ``OPENEDX_RELEASE`` environment variable to the appropriate image
    tag; "hawthorn.master", "zebrawood.rc1", etc.  Note that unlike a server
    install, ``OPENEDX_RELEASE`` should not have the "open-release/" prefix.
-2. Use ``make dev.checkout`` to check out the correct branch in the local
+#. Check out the appropriate branch in devstack, e.g. ``git checkout open-release/ironwood.master``
+#. Use ``make dev.checkout`` to check out the correct branch in the local
    checkout of each service repository once you've set the ``OPENEDX_RELEASE``
    environment variable above.
-3. ``make pull`` to get the correct images.
+#. ``make dev.pull`` to get the correct images.
 
 All ``make`` target and ``docker-compose`` calls should now use the correct
 images until you change or unset ``OPENEDX_RELEASE`` again.  To work on the
 master branches and ``latest`` images, unset ``OPENEDX_RELEASE`` or set it to
 an empty string.
 
-How do I create database dumps?
--------------------------------
-We use database dumps to speed up provisioning and generally spend less time running migrations. These dumps should be
-updated occasionally - when database migrations take a prolonged amount of time *or* we want to incorporate changes that
-require manual intervention.
+How do I create relational database dumps?
+------------------------------------------
+We use relational database dumps to spend less time running relational database
+migrations and to speed up the provisioning of a devstack. These dumps are saved
+as .sql scripts in the root directory of this git repository and they should be
+updated occasionally - when relational database migrations take a prolonged amount
+of time *or* we want to incorporate database schema changes which were done manually.
 
-To update the database dumps:
+To update the relational database dumps:
 
-1. Destroy and/or backup the data for your existing devstack so that you start with a clean slate.
-2. Disable the loading of the existing database dumps during provisioning by commenting out any calls to ``load-db.sh``
-   in the provisioning scripts. This disabling ensures a start with a completely fresh database and incorporates any changes
-   that may have required some form of manual intervention for existing installations (e.g. drop/move tables).
-3. Provision devstack with ``make provision``.
-4. Dump the databases and open a pull request with your updates:
+1. Backup the data of your existing devstack if needed
+2. If you are unsure whether the django_migrations tables (which keeps which migrations
+were already applied) in each database are consistent with the existing database dumps,
+disable the loading of these database dumps during provisioning by commenting out
+the calls to ``load-db.sh`` in the provision-*.sh scripts. This ensures a start with a
+completely fresh database and incorporates any changes that may have required some form
+of manual intervention for existing installations (e.g. drop/move tables).
+3. Run the shell script which destroys any existing devstack, creates a new one
+and updates the relational database dumps:
 
 .. code:: sh
 
-   ./dump-db.sh ecommerce
-   ./dump-db.sh edxapp
-   ./dump-db.sh edxapp_csmh
+   ./update-dbs-init-sql-scripts.sh
 
 How do I keep my database up to date?
 -------------------------------------
@@ -552,7 +619,7 @@ starts, you have a few options:
 
 * Merge your updated requirements files and wait for a new `edxops Docker image`_
   for that service to be built and uploaded to `Docker Hub`_.  You can
-  then download and use the updated image (for example, via ``make pull``).
+  then download and use the updated image (for example, via ``make dev.pull.<service>``).
   The discovery and edxapp images are built automatically via a Jenkins job. All other
   images are currently built as needed by edX employees, but will soon be built
   automatically on a regular basis. See `How do I build images?`_
@@ -614,7 +681,7 @@ vary depending on the database. For all of the options, see ``provision.sql``.
 - Password: ``password``
 
 If you have trouble connecting, ensure the port was mapped successfully by
-running ``docker-compose ps`` and looking for a line like this:
+running ``make dev.ps`` and looking for a line like this:
 ``edx.devstack.mysql docker-entrypoint.sh mysql ... Up 0.0.0.0:3506→3306/tcp``.
 
 Switching branches
@@ -629,7 +696,7 @@ database migrations and package updates.
 When switching to a branch which differs greatly from the one you've been
 working on (especially if the new branch is more recent), you may wish to
 halt the existing containers via ``make down``, pull the latest Docker
-images via ``make pull``, and then re-run ``make dev.provision`` or
+images via ``make dev.pull.<service>``, and then re-run ``make dev.provision`` or
 ``make dev.sync.provision`` in order to recreate up-to-date databases,
 static assets, etc.
 
@@ -707,20 +774,20 @@ Set a PDB breakpoint anywhere in the code using:
 
 and your attached session will offer an interactive PDB prompt when the breakpoint is hit.
 
-To detach from the container, you'll need to stop the container with:
+You may be able to detach from the container with the ``Ctrl-P, Ctrl-Q`` key sequence.
+If that doesn't work, you will have either close your terminal window,
+stop the container with:
 
 .. code:: sh
 
-    make stop
+    make dev.stop.<service>
 
-or a manual Docker command to bring down the container:
+or kill the container with:
 
 .. code:: sh
 
-   docker kill $(docker ps -a -q --filter="name=edx.devstack.<container name>")
+   make dev.kill.<service>
 
-Alternatively, some terminals allow detachment from a running container with the
-``Ctrl-P, Ctrl-Q`` key sequence.
 
 Running LMS and Studio Tests
 ----------------------------
@@ -805,7 +872,7 @@ Check the logs
 
 If a container stops unexpectedly, you can look at its logs for clues::
 
-    docker-compose logs lms
+    make <service>-logs
 
 Update the code and images
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -817,7 +884,7 @@ directory:
 
 .. code:: sh
 
-   make pull
+   make dev.pull
 
 Pull the latest Docker Compose configuration and provisioning scripts by running
 the following command from the devstack directory:
@@ -900,8 +967,7 @@ Running LMS commands within a container
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Most of the ``paver`` commands require a settings flag. If omitted, the flag defaults to
-``devstack``, which is the settings flag for vagrant-based devstack instances.
-So if you run into issues running ``paver`` commands in a docker container, you should append
+``devstack``. If you run into issues running ``paver`` commands in a docker container, you should append
 the ``devstack_docker`` flag. For example:
 
 .. code:: sh
@@ -926,7 +992,7 @@ No space left on device
 If you see the error ``no space left on device`` on a Mac, Docker has run
 out of space in its Docker.qcow2 file.
 
-Here is an example error while running ``make pull``:
+Here is an example error while running ``make dev.pull``:
 
 .. code:: sh
 
@@ -961,7 +1027,7 @@ While provisioning, some have seen the following error:
    ...
    cwd = os.getcwdu()
    OSError: [Errno 2] No such file or directory
-   make: *** [dev.provision.run] Error 1
+   make: *** [dev.provision.services] Error 1
 
 This issue can be worked around, but there's no guaranteed method to do so.
 Rebooting and restarting Docker does *not* seem to correct the issue. It
@@ -1098,3 +1164,4 @@ GitHub issue which explains the `current status of implementing delegated consis
 .. _Python virtualenv: http://docs.python-guide.org/en/latest/dev/virtualenvs/#lower-level-virtualenv
 .. _Running analytics acceptance tests in docker: http://edx-analytics-pipeline-reference.readthedocs.io/en/latest/running_acceptance_tests_in_docker.html
 .. _Troubleshooting docker analyticstack: http://edx-analytics-pipeline-reference.readthedocs.io/en/latest/troubleshooting_docker_analyticstack.html
+.. _Community: https://open.edx.org/community/connect/
